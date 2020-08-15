@@ -3,9 +3,13 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "Firstapp": {
+    "Mits": {
       "projectType": "application",
-      "schematics": {},
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "sass"
+        }
+      },
       "root": "",
       "sourceRoot": "src",
       "prefix": "app",
@@ -13,7 +17,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/Firstapp",
+            "outputPath": "dist/Mits",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -24,7 +28,7 @@
               "src/assets"
             ],
             "styles": [
-              "src/styles.css"
+              "src/styles.sass"
             ],
             "scripts": []
           },
@@ -62,18 +66,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "Firstapp:build"
+            "browserTarget": "Mits:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "Firstapp:build:production"
+              "browserTarget": "Mits:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "Firstapp:build"
+            "browserTarget": "Mits:build"
           }
         },
         "test": {
@@ -88,7 +92,7 @@
               "src/assets"
             ],
             "styles": [
-              "src/styles.css"
+              "src/styles.sass"
             ],
             "scripts": []
           }
@@ -110,19 +114,19 @@
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "Firstapp:serve"
+            "devServerTarget": "Mits:serve"
           },
           "configurations": {
             "production": {
-              "devServerTarget": "Firstapp:serve:production"
+              "devServerTarget": "Mits:serve:production"
             }
           }
         }
       }
     }
   },
-  "defaultProject": "Firstapp",
+  "defaultProject": "Mits",
   "cli": {
-    "analytics": "55c38e82-2721-4730-bf62-7edf82007946"
+    "analytics": "d10853c2-9b33-41cd-bb57-54c8ca320ce6"
   }
 }
