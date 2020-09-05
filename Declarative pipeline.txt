@@ -1,0 +1,647 @@
+pipeline {
+
+
+
+	agent any
+
+
+
+
+
+	parameters {
+
+
+
+	
+
+	choice(name: 'Environ', choices: ['PTE-1', 'PTE-2', 'CTEF1-1', 'CTEF1-2', 'DevOps', 'PPE1-1', 'PPE1-2', 'Local'], description: 'Select environment for deployment')
+
+
+
+
+
+	}
+
+
+
+	environment {
+
+
+
+	dotnet = 'C:\\Program Files\\dotnet\\dotnet.exe'
+
+	
+
+	Prop_Path = "C:\\jenkins_new\\Configurations"
+
+
+
+	env_pcm = "${Environ}.properties"
+
+
+
+	}
+
+
+
+
+
+
+	stages {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	stage ('Checkout') {
+
+
+
+	steps {
+
+
+
+
+
+	cleanWs()
+
+
+
+	dir ("PCM_App")
+
+
+
+	
+
+	{
+
+
+
+	git url: 'https://c78a11d9bd14dbbdd723f3b5f314293c34f9167f@git.build.ingka.ikea.com/IKEA-PBSS/PCM_App.git',branch: 'PCM_App_R20.5.0_Int'
+
+
+
+	}
+
+
+
+	}
+
+
+
+	}
+
+
+
+	stage('Init'){
+
+
+
+	steps{
+
+
+
+
+
+	script{
+
+
+
+
+
+	try{
+
+
+
+
+
+	echo "$Environ"
+
+
+
+	echo "$env_pcm"
+
+
+
+	dir ("${Prop_Path}")
+
+
+
+	{
+
+
+
+	bat 'dir'
+
+
+
+	properties = readProperties file: "${env_pcm}"
+
+
+
+	hostname=properties['hostname']
+
+
+
+	username=properties['username']
+
+
+
+	password=properties['password']
+
+
+
+	shared_directory_pcm=properties['shared_directory_pcm']
+
+
+
+	echo "$hostname"
+
+
+
+	echo "$username"
+
+
+
+	echo "$shared_directory_pcm"
+
+
+
+	}
+
+
+
+	dir ("PCM_App/IKEA.PCM.App") {
+
+
+
+	bat 'dotnet clean'
+
+
+
+	}
+
+
+
+	}catch(Exception e) {
+
+
+
+	// Do something with the exception 
+
+
+
+	println e
+
+
+
+	}
+
+
+
+	}
+
+	
+
+	}
+
+
+
+	}
+
+
+
+
+
+	/**stage('Set_Environment') {
+
+
+
+
+
+	steps {
+
+
+
+	script{
+
+
+
+	try{
+
+
+
+	dir ("PCM_App/ikea.pcm.api") {
+
+
+
+	bat """
+
+
+
+	setx ASPNETCORE_ENVIRONMENT "$Environ"
+
+
+
+	"""
+
+
+
+	}}
+
+
+
+
+
+	catch(err) {
+
+
+
+	// Do something with the exception 
+
+
+
+	echo "CAUGHT ERROR: ${err}"
+
+
+
+	throw err
+
+
+
+	}
+
+
+
+	}}
+
+
+
+	}**/
+
+
+
+
+
+	/**stage ('Restore PACKAGES') {
+
+	
+
+	steps {
+
+
+
+	dir ("ikea.pcm.api") {
+
+
+
+	bat "dotnet restore --configfile NuGet.Config"
+
+
+
+	}
+
+	
+
+	}
+
+
+
+	}
+
+
+
+	stage('Build') {
+
+
+
+	steps {
+
+
+
+	script{
+
+
+
+	try{
+
+
+
+	dir ("PCM_App/IKEA.PCM.App") {
+
+
+
+	bat 'dotnet build'
+
+
+
+	//--configuration Release'
+
+
+
+	}}
+
+
+
+	catch(err) {
+
+
+
+	// Do something with the exception 
+
+
+
+	echo "CAUGHT ERROR: ${err}"
+
+
+
+	throw err
+
+
+
+	}
+
+
+
+	}}
+
+
+
+	}**/
+
+
+
+
+
+	stage('Publish') {
+
+
+
+	steps {
+
+
+
+	script{
+
+	
+
+	try{
+
+
+
+	dir ("${Prop_Path}")
+
+
+
+	{
+
+
+
+	//bat 'C:\\Users\\PCTES\\script3132.bat'
+
+
+
+	//echo "$ASPNETCORE_ENVIRONMENT"
+
+
+
+	if ("${Environ}" == "PTE-2")
+
+
+
+	{
+
+
+
+	bat """
+
+
+
+
+
+	cd C:\\jenkins_new\\workspace\\Dotnet_Deployment\\PCM_App
+
+
+
+	dotnet publish -c Release -o ${shared_directory_pcm}
+
+
+
+	"""
+
+
+
+	}
+
+	
+
+	else
+
+
+
+	{
+
+
+
+	bat """
+
+
+
+	
+
+	deploy_dotnet.bat $hostname $username $password $shared_directory_pcm
+
+
+
+
+
+	"""
+
+
+
+	}
+
+
+
+	}}
+
+
+
+	catch(err) {
+
+
+
+	// Do something with the exception 
+
+
+
+	echo "CAUGHT ERROR: ${err}"
+
+
+
+	throw err
+
+
+
+	}
+
+
+
+	}
+
+
+
+	}
+
+
+
+	}
+
+
+
+	
+
+	/**stage('Functional_Automation') {
+
+
+
+	steps {
+
+
+
+	build 'PCM_Modernization_Automation'
+
+
+
+	echo 'PCM modernization automation script is running'
+
+
+
+
+
+	}
+
+	
+
+	}**/
+
+
+
+
+
+
+	}
+
+
+
+
+
+	post {
+
+
+
+	always {
+
+
+
+	script {
+
+
+
+
+
+	if (currentBuild.result == null) {
+
+
+
+
+
+	currentBuild.result = 'SUCCESS' 
+
+
+
+	}
+
+
+
+	} 
+
+
+
+
+
+	emailext (
+
+
+
+
+
+	subject: "Deployment Status: '${currentBuild.currentResult}' - ${env.JOB_NAME} [Build # ${env.BUILD_NUMBER}]",
+
+
+
+	body: """ Hi All,
+
+
+
+	<p>Build Deploy in $Environ Server.</p>
+
+
+
+	<p>Check console output at $BUILD_URL to view the results.</p>
+
+
+
+	Thanks!!""",
+
+
+
+	
+
+	to: "<deepak.raghuvanshi@inter.ikea.com>,<abhishek.sadana@ingka.com>,<ashish.bhandari@ingka.com>,<sourabh.dwivedi@ingka.com>"
+
+
+
+	)
+
+	
+
+	}
+
+	
+
+	}
+
+
+
+	}
+
+
+
+	def cmd_exec(command) {
+
+
+
+	return bat(returnStdout: true, script: "${command}").trim()
+
+
+
+	}
+
